@@ -2,17 +2,21 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/utils/supabase";
+import EstadoBadge from "@/components/EstadoBadge";
 
 
 export default function Pedidos() {
+  const router = useRouter();
   const [pedidos, setPedidos] = useState([]);
 
   useEffect(() => {
     const obtenerPedidos = async () => {
       const { data, error } = await supabase
         .from("Pedidos")
-        .select("*");
+        .select("*")
+        .order("id", { ascending: true });
 
       if (error) {
         console.log("Error al obtener pedidos:", error);
@@ -42,21 +46,36 @@ export default function Pedidos() {
           No hay pedidos todavía.
         </p>
       ) : (
-        <ul className="flex flex-col divide-y divide-neutral-200 rounded-md border border-neutral-200 dark:divide-neutral-800 dark:border-neutral-800">
-          {pedidos.map((pedido) => (
-            <li
-              key={pedido.id}
-              className="flex items-center justify-between px-4 py-3 text-sm text-neutral-800 dark:text-neutral-200"
-            >
-              <span>
-                #{pedido.id} — {pedido.nombre_cliente}
-              </span>
-              <span className="rounded-full bg-neutral-100 px-2 py-1 text-xs font-medium text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300">
-                {pedido.estatus}
-              </span>
-            </li>
-          ))}
-        </ul>
+        <table className="w-full table-auto border-collapse overflow-hidden rounded-md border border-neutral-200 text-sm dark:border-neutral-800">
+          <thead>
+            <tr className="bg-neutral-100 dark:bg-neutral-900">
+              <th className="px-4 py-2 text-left text-xs font-semibold uppercase text-neutral-500 dark:text-neutral-400">
+                Número de orden
+              </th>
+              <th className="px-4 py-2 text-left text-xs font-semibold uppercase text-neutral-500 dark:text-neutral-400">
+                Nombre
+              </th>
+              <th className="px-4 py-2 text-left text-xs font-semibold uppercase text-neutral-500 dark:text-neutral-400">
+                Estatus
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-neutral-200 dark:divide-neutral-800">
+            {pedidos.map((pedido) => (
+              <tr
+                key={pedido.id}
+                onClick={() => router.push(`/pedidos/${pedido.id}`)}
+                className="cursor-pointer text-neutral-800 transition hover:bg-neutral-50 dark:text-neutral-200 dark:hover:bg-neutral-900"
+              >
+                <td className="px-4 py-3">#{pedido.id}</td>
+                <td className="px-4 py-3">{pedido.nombre_cliente}</td>
+                <td className="px-4 py-3">
+                  <EstadoBadge estatus={pedido.estatus} />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       )}
     </div>
   );
