@@ -45,16 +45,12 @@ export default function NuevoPedido() {
       return;
     }
 
-    const { data: urlData } = supabase.storage
-      .from("fotos-pedidos")
-      .getPublicUrl(nombreArchivo);
-
     const { data, error: errorInsert } = await supabase
       .from("Pedidos")
       .insert({
         nombre_cliente: nombreCliente,
         telefono: telefono,
-        foto_url: urlData.publicUrl,
+        foto_url: nombreArchivo,
       });
 
     if (errorInsert) {

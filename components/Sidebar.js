@@ -2,12 +2,24 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
-import { ClipboardList, Users, Settings, Menu, X, Sun, Moon } from "lucide-react";
+import {
+  LayoutDashboard,
+  ClipboardList,
+  Users,
+  Settings,
+  Menu,
+  X,
+  Sun,
+  Moon,
+  LogOut,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/utils/supabase";
 
 const items = [
+  { label: "Panel de pedidos", href: "/", icon: LayoutDashboard },
   { label: "Pedidos", href: "/pedidos", icon: ClipboardList },
   { label: "Clientes", href: null, icon: Users },
   { label: "Ajustes", href: null, icon: Settings },
@@ -16,7 +28,13 @@ const items = [
 export default function Sidebar() {
   const [abierto, setAbierto] = useState(true);
   const pathname = usePathname();
+  const router = useRouter();
   const { resolvedTheme, setTheme } = useTheme();
+
+  const manejarCerrarSesion = async () => {
+    await supabase.auth.signOut();
+    router.replace("/login");
+  };
 
   return (
     <div className="flex">
@@ -33,7 +51,7 @@ export default function Sidebar() {
 
         <nav className="flex flex-col gap-1">
           {items.map(({ label, href, icon: Icon }) => {
-            const activo = href && pathname.startsWith(href);
+            const activo = href && (href === "/" ? pathname === "/" : pathname.startsWith(href));
 
             if (!href) {
               return (
@@ -76,6 +94,15 @@ export default function Sidebar() {
           <Moon className="hidden size-4 dark:block" />
           <span className="dark:hidden">Modo oscuro</span>
           <span className="hidden dark:inline">Modo claro</span>
+        </button>
+
+        <button
+          onClick={manejarCerrarSesion}
+          tabIndex={abierto ? 0 : -1}
+          className="flex items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium text-sidebar-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+        >
+          <LogOut className="size-4" />
+          Cerrar sesión
         </button>
       </aside>
 

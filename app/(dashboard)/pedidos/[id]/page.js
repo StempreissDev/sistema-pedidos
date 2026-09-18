@@ -4,11 +4,13 @@ import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/utils/supabase";
+import { obtenerUrlFirmada } from "@/utils/fotos";
 import EstadoBadge from "@/components/EstadoBadge";
 
 export default function DetallePedido() {
   const { id } = useParams();
   const [pedido, setPedido] = useState(null);
+  const [fotoUrl, setFotoUrl] = useState(null);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -29,6 +31,19 @@ export default function DetallePedido() {
 
     obtenerPedido();
   }, [id]);
+
+  useEffect(() => {
+    if (!pedido?.foto_url) return;
+
+    let activo = true;
+    obtenerUrlFirmada(pedido.foto_url).then((url) => {
+      if (activo) setFotoUrl(url);
+    });
+
+    return () => {
+      activo = false;
+    };
+  }, [pedido?.foto_url]);
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 p-8">
@@ -72,11 +87,17 @@ export default function DetallePedido() {
               <span className="text-xs font-medium uppercase text-neutral-500 dark:text-neutral-400">
                 Foto
               </span>
-              <img
-                src={pedido.foto_url}
-                alt={`Foto del pedido de ${pedido.nombre_cliente}`}
-                className="rounded-md border border-neutral-200 dark:border-neutral-800"
-              />
+              {fotoUrl ? (
+                <img
+                  src={fotoUrl}
+                  alt={`Foto del pedido de ${pedido.nombre_cliente}`}
+                  className="rounded-md border border-neutral-200 dark:border-neutral-800"
+                />
+              ) : (
+                <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                  Cargando foto...
+                </p>
+              )}
             </div>
           )}
         </div>
